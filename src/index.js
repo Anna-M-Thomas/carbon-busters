@@ -31,7 +31,7 @@ const mymap = L.map(mapDiv, {
   keyboard: false,
   touchZoom: false,
   doubleClickZoom: false,
-  scrollWheelZoom: false, //<==temporarily enable to check things
+  scrollWheelZoom: false, //<==temporarily enable if you want to check things
 }).setView({ lat: 38.07992400470959, lng: 140.8103761728401 }, 14);
 L.tileLayer(
   "https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg",
