@@ -16,10 +16,10 @@ let windowDiv; // use to store created window component and tell it to remove it
 const loader = new PIXI.Loader();
 const app = new PIXI.Application();
 const b = new Bump(PIXI);
-let hero, state, pixiOverlay;
-let sprites = [];
-let spritesInBounds = [];
-let magics = [];
+let hero, politician, state, pixiOverlay;
+let plantArray = [];
+let inBoundsArray = [];
+let magicArray = [];
 let magicCount = 0;
 let plantCount;
 let convertedPlantCount = 0;
@@ -51,6 +51,7 @@ mymap.panTo(heroLatLng);
 //load stuff
 loader.add("hero", "img/Julia/Julia.json");
 loader.add("coal", "img/hysteric_karyoku.png");
+loader.add("politician", "img/seijika2.png");
 loader.add("magic", "img/earth.png");
 loader.load(setup);
 
@@ -62,13 +63,13 @@ function setup(loader, resources) {
   const juliaSheet = resources.hero.spritesheet;
   hero = new PIXI.AnimatedSprite(juliaSheet.animations["idle"]);
 
-  //Coal sprites texture
+  //Sprites textures
   const coalTexture = resources.coal.texture;
   const magicTexture = resources.magic.texture;
+  const politicianTexture = resources.politician.texture;
 
   //add hero
   app.stage.addChild(hero);
-  //another test
 
   //Make pixi overlay
   pixiOverlay = L.pixiOverlay(function (utils, event) {
@@ -81,6 +82,19 @@ function setup(loader, resources) {
 
     //start first draw
     if (firstDraw) {
+      //***** adding the politician as a test ******
+      politician = new PIXI.Sprite(politicianTexture);
+      app.stage.addChild(politician);
+      const politicianLatLng = [38.43, 141.335];
+      const politicianCoords = project(politicianLatLng);
+      politician.vx = 0;
+      politician.vy = 0;
+      politician.x = politicianCoords.x;
+      politician.y = politicianCoords.y;
+      politician.scale.set(0.6 / scale);
+      politician.anchor.set(0, 0.5);
+      //***** adding the politician as a test ******
+
       //initial velocity, position, scale etc. for hero
       hero.vx = 0;
       hero.vy = 0;
@@ -121,7 +135,7 @@ function setup(loader, resources) {
         plantSprite.latLngObject = plantLatLng;
         plantSprite.coalPlant = true;
         plantSprite.motto = getMotto("coal");
-        sprites.push(plantSprite);
+        plantArray.push(plantSprite);
       });
 
       //make magic sprites
@@ -134,8 +148,8 @@ function setup(loader, resources) {
         //purposefully out of bounds initially to be placed in right area
         magic.latLngObject = L.latLng(50.5, 30.5);
         app.stage.addChild(magic);
-        magics.push(magic);
-        spritesInBounds.push(magic);
+        magicArray.push(magic);
+        inBoundsArray.push(magic);
       }
     }
     //end first draw
@@ -184,11 +198,14 @@ function setup(loader, resources) {
       let targetPlantHealth = targetPlant.properties.capacity;
       const panLat = targetPlant.latLngObject.lat - 0.003;
       const panLng = targetPlant.latLngObject.lng;
+      console.log("pan lat and lng", panLat, panLng);
       map.panTo([panLat, panLng], { duration: 2 });
-      const heroLat = targetPlant.latLngObject.lat - 0.015;
-      let heroCoords = project([heroLat, panLng]);
+      const heroLat = targetPlant.latLngObject.lat - 0.014;
+      let heroCoords = project([heroLat, panLng - 0.002]); //slightly adjust to left to center, dunno why
+      console.log("hero lat and lng", heroLat, panLng);
       hero.x = heroCoords.x;
       hero.y = heroCoords.y;
+
       left.unsubscribe();
       up.unsubscribe();
       right.unsubscribe();
@@ -246,7 +263,7 @@ function setup(loader, resources) {
   left.press = () => {
     hero.textures = juliaSheet.animations["walk_left"];
     hero.play();
-    hero.vx = -0.05;
+    hero.vx = -0.04;
     hero.vy = 0;
   };
   left.release = () => {
@@ -259,7 +276,7 @@ function setup(loader, resources) {
   up.press = () => {
     hero.textures = juliaSheet.animations["walk_up"];
     hero.play();
-    hero.vy = -0.05;
+    hero.vy = -0.04;
     hero.vx = 0;
   };
   up.release = () => {
@@ -272,7 +289,7 @@ function setup(loader, resources) {
   right.press = () => {
     hero.textures = juliaSheet.animations["walk_right"];
     hero.play();
-    hero.vx = 0.05;
+    hero.vx = 0.04;
     hero.vy = 0;
   };
   right.release = () => {
@@ -285,7 +302,7 @@ function setup(loader, resources) {
   down.press = () => {
     hero.textures = juliaSheet.animations["walk_forward"];
     hero.play();
-    hero.vy = 0.05;
+    hero.vy = 0.04;
     hero.vx = 0;
   };
   down.release = () => {
@@ -311,40 +328,70 @@ function gameLoop(delta) {
 let counter = 199;
 
 function play(delta) {
+  //previous positions for potentially moving sprites
   const previousX = hero.x;
   const previousY = hero.y;
+  const previousPoliticianX = politician.x;
+  const previousPoliticianY = politician.y;
 
-  //Use hero's velocity to make her move
+  //Velocities
   hero.x += hero.vx;
   hero.y += hero.vy;
+  let differenceX = previousPoliticianX - hero.x;
+  let differenceY = previousPoliticianY - hero.y;
+  if (differenceX.toFixed(2) > -0.44) {
+    politician.vx = -0.01;
+  } else if (differenceX.toFixed(2) < -0.44) {
+    politician.vx = 0.01;
+  } else {
+    politician.vx = 0;
+    console.log("stop");
+  }
+  console.log(differenceY);
+  if (differenceY.toFixed(2) > 0) {
+    politician.vy = -0.01;
+  } else if (differenceY.toFixed(2) < 0) {
+    politician.vy = 0.01;
+  } else {
+    politician.vy = 0;
+    console.log("stop");
+  }
+
+  politician.x += politician.vx;
+  politician.y += politician.vy;
 
   //increase counter
   counter++;
 
-  //if hero actually moved, check bounds, redraw and check for collision
-  if (previousX != hero.x || previousY != hero.y) {
-    if (counter > 200) {
-      const boundsNow = mymap.getBounds();
-      stuffGoesInsideBounds(boundsNow);
-      counter = 0;
-    }
-
-    pixiOverlay.redraw({ type: "move" });
-    if (counter % 10 === 0) {
-      spritesInBounds.forEach((sprite) => {
-        if (sprite.coalPlant) {
-          b.rectangleCollision(hero, sprite, true, false);
-        } else if (sprite.magic && !sprite.hit) {
-          let collided = b.hit(hero, sprite);
-          if (collided) {
-            sprite.hit = true;
-            sprite.visible = false;
-            changeMagic(1);
-          }
-        }
-      });
-    }
+  // Do I need to check if someone has moved? Can I just redraw every delta
+  // if (
+  //   previousX != hero.x ||
+  //   previousY != hero.y ||
+  //   previousPoliticianX !== politician.x ||
+  //   previousPoliticianY !== politician.y
+  // ) {
+  if (counter > 200) {
+    const boundsNow = mymap.getBounds();
+    stuffGoesInsideBounds(boundsNow);
+    counter = 0;
   }
+
+  pixiOverlay.redraw({ type: "move" });
+  if (counter % 10 === 0) {
+    inBoundsArray.forEach((sprite) => {
+      if (sprite.coalPlant) {
+        b.rectangleCollision(hero, sprite, true, false);
+      } else if (sprite.magic && !sprite.hit) {
+        let collided = b.hit(hero, sprite);
+        if (collided) {
+          sprite.hit = true;
+          sprite.visible = false;
+          changeMagic(1);
+        }
+      }
+    });
+  }
+  // }
 }
 
 //Stuff is placed and visible only inside larger bounds
@@ -360,17 +407,15 @@ function stuffGoesInsideBounds(visibleBounds) {
   const corner1 = L.latLng(norther, wester);
   const corner2 = L.latLng(souther, easter);
   const largerBounds = L.latLngBounds(corner1, corner2);
-  spritesInBounds = [...magics];
-  //check who is in bounds for possible collision
-  sprites.forEach((sprite) => {
-    if (largerBounds.contains(sprite.latLngObject)) {
-      //     sprite.visible = true;
-      spritesInBounds.push(sprite);
+  inBoundsArray = [...magicArray];
+  //check what plants etc are in bounds for possible collision
+  plantArray.forEach((plant) => {
+    if (largerBounds.contains(plant.latLngObject)) {
+      inBoundsArray.push(plant);
     }
-    //   } else sprite.visible = false;
   });
   // replace magic that has been picked up or out of larger bounds
-  magics.forEach((magic) => {
+  magicArray.forEach((magic) => {
     if (!largerBounds.contains(magic.latLngObject) || !magic.visible) {
       let newLatLng;
       do {
@@ -387,9 +432,7 @@ function stuffGoesInsideBounds(visibleBounds) {
 function attacc(event) {
   windowDiv.remove();
   let id = event.target.dataset.attribute;
-  let found = sprites
-    .filter((sprite) => sprite.coalPlant)
-    .find((sprite) => sprite.properties.ID == id);
+  let found = plantArray.find((plant) => plant.properties.ID == id);
   pixiOverlay.redraw({ type: "attacc", data: found });
 }
 
