@@ -47,4 +47,79 @@ function keyboard(value) {
   return key;
 }
 
-export default keyboard;
+function Keyboard(hero, juliaSheet) {
+  let left = keyboard("j");
+  let right = keyboard("l");
+  let up = keyboard("i");
+  let down = keyboard("k");
+
+  left.press = () => {
+    hero.textures = juliaSheet.animations["walk_left"];
+    hero.play();
+    hero.vx = -0.04;
+    hero.vy = 0;
+  };
+  left.release = () => {
+    if (!right.isDown && hero.vy === 0) {
+      hero.textures = juliaSheet.animations["idle"];
+      hero.vx = 0;
+    }
+  };
+
+  up.press = () => {
+    hero.textures = juliaSheet.animations["walk_up"];
+    hero.play();
+    hero.vy = -0.04;
+    hero.vx = 0;
+  };
+  up.release = () => {
+    if (!down.isDown && hero.vx === 0) {
+      hero.textures = juliaSheet.animations["idle"];
+      hero.vy = 0;
+    }
+  };
+
+  right.press = () => {
+    hero.textures = juliaSheet.animations["walk_right"];
+    hero.play();
+    hero.vx = 0.04;
+    hero.vy = 0;
+  };
+  right.release = () => {
+    if (!left.isDown && hero.vy === 0) {
+      hero.textures = juliaSheet.animations["idle"];
+      hero.vx = 0;
+    }
+  };
+
+  down.press = () => {
+    hero.textures = juliaSheet.animations["walk_forward"];
+    hero.play();
+    hero.vy = 0.04;
+    hero.vx = 0;
+  };
+  down.release = () => {
+    if (!up.isDown && hero.vx === 0) {
+      hero.textures = juliaSheet.animations["idle"];
+      hero.vy = 0;
+    }
+  };
+
+  function unsubscribeAll() {
+    left.unsubscribe();
+    up.unsubscribe();
+    right.unsubscribe();
+    down.unsubscribe();
+  }
+
+  function resubscribeAll() {
+    left.resubscribe();
+    up.resubscribe();
+    right.resubscribe();
+    down.resubscribe();
+  }
+
+  return { unsubscribeAll, resubscribeAll };
+}
+
+export { Keyboard };

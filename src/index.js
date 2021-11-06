@@ -2,11 +2,10 @@ import * as L from "leaflet";
 import * as PIXI from "pixi.js";
 import "leaflet-pixi-overlay";
 import Bump from "./bump";
-import keyboard from "./keyboard";
+import { Keyboard } from "./keyboard";
 import { windowComponent, battleBar } from "./ui";
 import { Politician, Hero, CoalPlant, Magic } from "./extendedSprites";
 import coalPlants from "./map_point_en.geoJson";
-import getMotto from "./coalmotto";
 const mapDiv = document.getElementById("mapid");
 const magicDisplay = document.getElementById("magic-score");
 const plantDisplay = document.getElementById("plant-count");
@@ -189,11 +188,7 @@ function setup(loader, resources) {
       let heroCoords = project([heroLat, panLng - 0.002]); //slightly adjust to left to center, dunno why
       hero.x = heroCoords.x;
       hero.y = heroCoords.y;
-
-      left.unsubscribe();
-      up.unsubscribe();
-      right.unsubscribe();
-      down.unsubscribe();
+      keyboard.unsubscribeAll();
       let barControl = battleBar(
         targetPlant.properties.name,
         targetPlantHealth
@@ -203,10 +198,7 @@ function setup(loader, resources) {
         targetPlant.properties.capacity = targetPlantHealth; // set to whatever value when battle ended
         endBattleButton.removeEventListener("click", endBattleAndResubscribe);
         endBattle();
-        left.resubscribe();
-        up.resubscribe();
-        right.resubscribe();
-        down.resubscribe();
+        keyboard.resubscribeAll();
         duringAttacc = false;
       }
       endBattleButton.addEventListener("click", endBattleAndResubscribe);
@@ -238,63 +230,8 @@ function setup(loader, resources) {
   //Put pixi overlay on map
   pixiOverlay.addTo(mymap);
 
-  //Keyboard stuff
-  let left = keyboard("j");
-  let right = keyboard("l");
-  let up = keyboard("i");
-  let down = keyboard("k");
-
-  left.press = () => {
-    hero.textures = juliaSheet.animations["walk_left"];
-    hero.play();
-    hero.vx = -0.04;
-    hero.vy = 0;
-  };
-  left.release = () => {
-    if (!right.isDown && hero.vy === 0) {
-      hero.textures = juliaSheet.animations["idle"];
-      hero.vx = 0;
-    }
-  };
-
-  up.press = () => {
-    hero.textures = juliaSheet.animations["walk_up"];
-    hero.play();
-    hero.vy = -0.04;
-    hero.vx = 0;
-  };
-  up.release = () => {
-    if (!down.isDown && hero.vx === 0) {
-      hero.textures = juliaSheet.animations["idle"];
-      hero.vy = 0;
-    }
-  };
-
-  right.press = () => {
-    hero.textures = juliaSheet.animations["walk_right"];
-    hero.play();
-    hero.vx = 0.04;
-    hero.vy = 0;
-  };
-  right.release = () => {
-    if (!left.isDown && hero.vy === 0) {
-      hero.textures = juliaSheet.animations["idle"];
-      hero.vx = 0;
-    }
-  };
-
-  down.press = () => {
-    hero.textures = juliaSheet.animations["walk_forward"];
-    hero.play();
-    hero.vy = 0.04;
-    hero.vx = 0;
-  };
-  down.release = () => {
-    if (!up.isDown && hero.vx === 0) {
-      hero.textures = juliaSheet.animations["idle"];
-      hero.vy = 0;
-    }
-  };
+  //keyboard stuff separated out!!
+  let keyboard = Keyboard(hero, juliaSheet);
 
   //Set the game state
   state = play;
@@ -433,7 +370,6 @@ function changeMagic(number) {
 }
 
 function plantConverted() {
-  console.log(plantCount, convertedPlantCount);
   plantCount--;
   convertedPlantCount++;
   plantDisplay.innerText = plantCount;
