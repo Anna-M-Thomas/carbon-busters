@@ -4329,5 +4329,11 @@ const coalPlants = {
         }
     ]
 }
+const filteredCoalplants = coalPlants.features.filter((plant) => {
+    return (
+      plant.properties.status_class == "operation" ||
+      plant.properties.status_class == "planned"
+    );
+  });
 
-export default coalPlants;
+export default filteredCoalplants;

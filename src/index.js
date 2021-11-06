@@ -5,7 +5,7 @@ import Bump from "./bump";
 import { Keyboard } from "./keyboard";
 import { windowComponent, battleBar } from "./ui";
 import { Politician, Hero, CoalPlant, Magic } from "./extendedSprites";
-import coalPlants from "./map_point_en.geoJson";
+import filteredCoalplants from "./map_point_en";
 const mapDiv = document.getElementById("mapid");
 const magicDisplay = document.getElementById("magic-score");
 const plantDisplay = document.getElementById("plant-count");
@@ -96,14 +96,6 @@ function setup(loader, resources) {
         heroCoords.y
       );
       app.stage.addChild(hero);
-
-      //filter mothballed/shelved plants out of coalPlants
-      const filteredCoalplants = coalPlants.features.filter((plant) => {
-        return (
-          plant.properties.status_class == "operation" ||
-          plant.properties.status_class == "planned"
-        );
-      });
 
       plantCount = filteredCoalplants.length;
       plantDisplay.innerText = plantCount;
