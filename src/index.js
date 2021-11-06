@@ -4,6 +4,7 @@ import "leaflet-pixi-overlay";
 import Bump from "./bump";
 import keyboard from "./keyboard";
 import { windowComponent, battleBar } from "./ui";
+import { Politician, Hero, CoalPlant, Magic } from "./extendedSprites";
 import coalPlants from "./map_point_en.geoJson";
 import getMotto from "./coalmotto";
 const mapDiv = document.getElementById("mapid");
@@ -59,17 +60,11 @@ loader.load(setup);
 function setup(loader, resources) {
   let firstDraw = true;
 
-  //Julia (our hero)
-  const juliaSheet = resources.hero.spritesheet;
-  hero = new PIXI.AnimatedSprite(juliaSheet.animations["idle"]);
-
   //Sprites textures
+  const juliaSheet = resources.hero.spritesheet;
   const coalTexture = resources.coal.texture;
   const magicTexture = resources.magic.texture;
   const politicianTexture = resources.politician.texture;
-
-  //add hero
-  app.stage.addChild(hero);
 
   //Make pixi overlay
   pixiOverlay = L.pixiOverlay(function (utils, event) {
@@ -83,27 +78,25 @@ function setup(loader, resources) {
     //start first draw
     if (firstDraw) {
       //***** adding the politician as a test ******
-      politician = new PIXI.Sprite(politicianTexture);
-      app.stage.addChild(politician);
-      const politicianLatLng = [38.43, 141.335];
-      const politicianCoords = project(politicianLatLng);
-      politician.vx = 0;
-      politician.vy = 0;
-      politician.x = politicianCoords.x;
-      politician.y = politicianCoords.y;
-      politician.scale.set(0.6 / scale);
-      politician.anchor.set(0, 0.5);
+      // const politicianCoords = project([38.43, 141.335]);
+      // politician = new Politician(
+      //   politicianTexture,
+      //   scale,
+      //   politicianCoords.x,
+      //   politicianCoords.y
+      // );
+      // app.stage.addChild(politician);
       //***** adding the politician as a test ******
 
-      //initial velocity, position, scale etc. for hero
-      hero.vx = 0;
-      hero.vy = 0;
+      // Add hero
       const heroCoords = project(heroLatLng);
-      hero.x = heroCoords.x;
-      hero.y = heroCoords.y;
-      hero.scale.set(1 / scale);
-      hero.animationSpeed = 0.1;
-      hero.anchor.set(0, 0.5);
+      hero = new Hero(
+        juliaSheet.animations["idle"],
+        scale,
+        heroCoords.x,
+        heroCoords.y
+      );
+      app.stage.addChild(hero);
 
       //filter mothballed/shelved plants out of coalPlants
       const filteredCoalplants = coalPlants.features.filter((plant) => {
@@ -118,35 +111,28 @@ function setup(loader, resources) {
 
       //make and place the coal plant sprites
       filteredCoalplants.forEach((plant) => {
-        const plantSprite = new PIXI.Sprite(coalTexture);
-        app.stage.addChild(plantSprite);
-        plantSprite.anchor.set(0.5, 1);
-        plantSprite.scale.set(0.3 / scale);
-        plantSprite.interactive = true;
-        plantSprite.buttonMode = true;
         const plantLatLng = L.latLng(
           plant.geometry.coordinates[1],
           plant.geometry.coordinates[0]
         );
         const plantCoords = project(plantLatLng);
-        plantSprite.x = plantCoords.x;
-        plantSprite.y = plantCoords.y;
-        plantSprite.properties = plant.properties;
-        plantSprite.latLngObject = plantLatLng;
-        plantSprite.coalPlant = true;
-        plantSprite.motto = getMotto("coal");
+        const plantSprite = new CoalPlant(
+          coalTexture,
+          scale,
+          plantCoords.x,
+          plantCoords.y,
+          plantLatLng,
+          plant.properties
+        );
+        app.stage.addChild(plantSprite);
         plantArray.push(plantSprite);
       });
 
       //make magic sprites
       for (let i = 0; i < 5; i++) {
-        const magic = new PIXI.Sprite(magicTexture);
-        magic.scale.set(2 / scale);
-        magic.magic = true;
-        //added to prevent double score during collision
-        magic.hit = false;
         //purposefully out of bounds initially to be placed in right area
-        magic.latLngObject = L.latLng(50.5, 30.5);
+        let latLng = L.latLng(50.5, 30.5);
+        const magic = new Magic(magicTexture, scale, latLng);
         app.stage.addChild(magic);
         magicArray.push(magic);
         inBoundsArray.push(magic);
@@ -198,11 +184,9 @@ function setup(loader, resources) {
       let targetPlantHealth = targetPlant.properties.capacity;
       const panLat = targetPlant.latLngObject.lat - 0.003;
       const panLng = targetPlant.latLngObject.lng;
-      console.log("pan lat and lng", panLat, panLng);
       map.panTo([panLat, panLng], { duration: 2 });
       const heroLat = targetPlant.latLngObject.lat - 0.014;
       let heroCoords = project([heroLat, panLng - 0.002]); //slightly adjust to left to center, dunno why
-      console.log("hero lat and lng", heroLat, panLng);
       hero.x = heroCoords.x;
       hero.y = heroCoords.y;
 
@@ -331,34 +315,34 @@ function play(delta) {
   //previous positions for potentially moving sprites
   const previousX = hero.x;
   const previousY = hero.y;
-  const previousPoliticianX = politician.x;
-  const previousPoliticianY = politician.y;
+  // const previousPoliticianX = politician.x;
+  // const previousPoliticianY = politician.y;
 
   //Velocities
   hero.x += hero.vx;
   hero.y += hero.vy;
-  let differenceX = previousPoliticianX - hero.x;
-  let differenceY = previousPoliticianY - hero.y;
-  if (differenceX.toFixed(2) > -0.44) {
-    politician.vx = -0.01;
-  } else if (differenceX.toFixed(2) < -0.44) {
-    politician.vx = 0.01;
-  } else {
-    politician.vx = 0;
-    console.log("stop");
-  }
-  console.log(differenceY);
-  if (differenceY.toFixed(2) > 0) {
-    politician.vy = -0.01;
-  } else if (differenceY.toFixed(2) < 0) {
-    politician.vy = 0.01;
-  } else {
-    politician.vy = 0;
-    console.log("stop");
-  }
+  // let differenceX = previousPoliticianX - hero.x;
+  // let differenceY = previousPoliticianY - hero.y;
+  // if (differenceX.toFixed(2) > -0.44) {
+  //   politician.vx = -0.01;
+  // } else if (differenceX.toFixed(2) < -0.44) {
+  //   politician.vx = 0.01;
+  // } else {
+  //   politician.vx = 0;
+  //   console.log("stop");
+  // }
+  // console.log(differenceY);
+  // if (differenceY.toFixed(2) > 0) {
+  //   politician.vy = -0.01;
+  // } else if (differenceY.toFixed(2) < 0) {
+  //   politician.vy = 0.01;
+  // } else {
+  //   politician.vy = 0;
+  //   console.log("stop");
+  // }
 
-  politician.x += politician.vx;
-  politician.y += politician.vy;
+  // politician.x += politician.vx;
+  // politician.y += politician.vy;
 
   //increase counter
   counter++;
