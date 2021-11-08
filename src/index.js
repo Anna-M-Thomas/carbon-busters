@@ -63,7 +63,7 @@ function setup(loader, resources) {
   const juliaSheet = resources.hero.spritesheet;
   const coalTexture = resources.coal.texture;
   const magicTexture = resources.magic.texture;
-  const politicianTexture = resources.politician.texture;
+  //const politicianTexture = resources.politician.texture;
 
   //Make pixi overlay
   pixiOverlay = L.pixiOverlay(function (utils, event) {
