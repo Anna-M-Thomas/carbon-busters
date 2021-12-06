@@ -7,15 +7,15 @@ function windowComponent(
   buttons = null
 ) {
   const windowContainer = document.getElementById("window-container");
-  const windowExists = document.getElementsByClassName("window");
+  const windowExists = document.getElementById("window");
   let closeButton;
 
-  if (windowExists.length > 0) {
+  if (windowExists) {
     return;
   }
   windowContainer.style.justifyContent = place;
   let div = document.createElement("div");
-  div.classList.add("window");
+  div.id = "window";
   windowContainer.appendChild(div);
 
   if (place == "flex-end") {

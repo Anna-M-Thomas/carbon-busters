@@ -122,56 +122,6 @@ class Bump {
           configurable: true,
         });
       }
-
-      //Earlier code - not needed now.
-      /*
-      Object.defineProperties(sprite, {
-        "gx": {
-          get(){return sprite.getGlobalPosition().x},
-          enumerable: true, configurable: true
-        },
-        "gy": {
-          get(){return sprite.getGlobalPosition().y},
-          enumerable: true, configurable: true
-        },
-        "centerX": {
-          get(){return sprite.x + sprite.width / 2},
-          enumerable: true, configurable: true
-        },
-        "centerY": {
-          get(){return sprite.y + sprite.height / 2},
-          enumerable: true, configurable: true
-        },
-        "halfWidth": {
-          get(){return sprite.width / 2},
-          enumerable: true, configurable: true
-        },
-        "halfHeight": {
-          get(){return sprite.height / 2},
-          enumerable: true, configurable: true
-        },
-        "xAnchorOffset": {
-          get(){
-            if (sprite.anchor !== undefined) {
-              return sprite.height * sprite.anchor.x;
-            } else {
-              return 0;
-            }
-          },
-          enumerable: true, configurable: true
-        },
-        "yAnchorOffset": {
-          get(){
-            if (sprite.anchor !== undefined) {
-              return sprite.width * sprite.anchor.y;
-            } else {
-              return 0;
-            }
-          },
-          enumerable: true, configurable: true
-        }
-      });
-      */
     }
 
     //Add a Boolean `_bumpPropertiesAdded` property to the sprite to flag it
