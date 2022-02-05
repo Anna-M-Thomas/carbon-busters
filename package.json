@@ -20,6 +20,9 @@
   "dependencies": {
     "leaflet": "^1.7.1",
     "leaflet-pixi-overlay": "^1.8.2",
-    "pixi.js": "^6.1.3"
+    "patch-package": "^6.4.7",
+    "pixi-filters": "^4.1.5",
+    "pixi.js": "^6.1.3",
+    "puxi.js": "0.0.5"
   }
 }
