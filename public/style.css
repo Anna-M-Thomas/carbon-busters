@@ -1,3 +1,7 @@
+* {
+  font-family: 'Ubuntu Mono', monospace;
+}
+
 .leaflet-container {
   cursor: default;
 }
@@ -5,6 +9,7 @@
 #mapid {
   height: 550px;
   width: 800px;
+  margin: auto;
 }
 
 #top-bar {
@@ -33,6 +38,11 @@
 .bar-item,
 .bar-item div {
   padding: 4px;
+}
+
+.bar-item img {
+  width: 45px;
+  height: 45px;
 }
 
 #window-container {
