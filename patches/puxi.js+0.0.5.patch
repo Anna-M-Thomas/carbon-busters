@@ -1,0 +1,56 @@
+diff --git a/node_modules/puxi.js/lib/puxi.mjs b/node_modules/puxi.js/lib/puxi.mjs
+index e34540a..cf49b15 100644
+--- a/node_modules/puxi.js/lib/puxi.mjs
++++ b/node_modules/puxi.js/lib/puxi.mjs
+@@ -6,7 +6,7 @@
+  * http://www.opensource.org/licenses/mit-license
+  */
+ // mjs
+-import { Point, utils, Container, BLEND_MODES, Graphics, Rectangle, Text, TextStyle, Ticker as Ticker$1, extras, Texture, Sprite as Sprite$1, BaseTexture } from 'pixi.js';
++import { Point, utils, Container, BLEND_MODES, Graphics, Rectangle, Text, TextStyle, Ticker as Ticker$1, TilingSprite as TilingSpriteWithAMoustache, Texture, Sprite as Sprite$1, BaseTexture } from 'pixi.js';
+ import { DropShadowFilter } from '@pixi/filter-drop-shadow';
+ 
+ /*!
+@@ -4289,7 +4289,7 @@ class SliceSprite extends Widget {
+         const { t, ff, fl, fr, ft, fb } = this;
+         // make sprites
+         this.sf = this.tile
+-            ? new extras.TilingSprite(new Texture(t, ff))
++            ? new TilingSpriteWithAMoustache(new Texture(t, ff))
+             : new Sprite$1(new Texture(t, ff));
+         this.contentContainer.addChildAt(this.sf, 0);
+         if (this.vs && this.hs) {
+@@ -4304,20 +4304,20 @@ class SliceSprite extends Widget {
+         }
+         if (hs) {
+             this.sl = this.tile
+-                ? new extras.TilingSprite(new Texture(t, fl))
++                ? new TilingSpriteWithAMoustache(new Texture(t, fl))
+                 : new Sprite$1(new Texture(t, fl));
+             this.sr = this.tile
+-                ? new extras.TilingSprite(new Texture(t, fr))
++                ? new TilingSpriteWithAMoustache(new Texture(t, fr))
+                 : new Sprite$1(new Texture(t, fr));
+             this.contentContainer.addChildAt(this.sl, 0);
+             this.contentContainer.addChildAt(this.sr, 0);
+         }
+         if (this.vs) {
+             this.st = this.tile
+-                ? new extras.TilingSprite(new Texture(t, ft))
++                ? new TilingSpriteWithAMoustache(new Texture(t, ft))
+                 : new Sprite$1(new Texture(t, ft));
+             this.sb = this.tile
+-                ? new extras.TilingSprite(new Texture(t, fb))
++                ? new TilingSpriteWithAMoustache(new Texture(t, fb))
+                 : new Sprite$1(new Texture(t, fb));
+             this.contentContainer.addChildAt(this.st, 0);
+             this.contentContainer.addChildAt(this.sb, 0);
+@@ -5645,7 +5645,7 @@ class TextInput extends FocusableWidget {
+  */
+ class TilingSprite extends Widget {
+     constructor(t, width, height) {
+-        const sprite = new extras.TilingSprite(t);
++        const sprite = new TilingSpriteWithAMoustache(t);
+         super(width || sprite.width, height || sprite.height);
+         this.sprite = sprite;
+         this.contentContainer.addChild(this.sprite);
