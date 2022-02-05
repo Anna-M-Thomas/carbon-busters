@@ -1,5 +1,5 @@
-import * as PIXI from "pixi.js";
-import getMotto from "./coalmotto";
+import * as PIXI from 'pixi.js';
+import getMotto from './coalmotto';
 
 class Politician extends PIXI.Sprite {
   constructor(texture, scale, x, y) {
@@ -9,7 +9,7 @@ class Politician extends PIXI.Sprite {
     this.vx = 0;
     this.vy = 0;
     this.scale.set(0.6 / scale);
-    this.anchor.set(0, 0.5);
+    this.anchor.set(0.5, 0.5);
   }
 }
 
@@ -25,14 +25,14 @@ class CoalPlant extends PIXI.Sprite {
     this.coalPlant = true;
     this.properties = properties;
     this.latLngObject = latLng;
-    this.motto = getMotto("coal");
+    this.motto = getMotto('coal');
   }
 }
 
 class Magic extends PIXI.Sprite {
   constructor(texture, scale, latLng) {
     super(texture);
-    this.scale.set(2 / scale);
+    this.scale.set(0.2 / scale);
     this.magic = true;
     //added to prevent double score during collision
     this.hit = false;
@@ -49,7 +49,7 @@ class Hero extends PIXI.AnimatedSprite {
     this.vy = 0;
     this.animationSpeed = 0.1;
     this.scale.set(1 / scale);
-    this.anchor.set(0, 0.5);
+    this.anchor.set(0.5, 0.5);
   }
 }
 
