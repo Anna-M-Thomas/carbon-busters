@@ -1,51 +1,41 @@
 //place is justify-content, so flex-end, center etc., close is close button or no
 //buttons is a array of objects name: name of button, function: event listener for button
-function windowComponent(
-  place = "center",
-  content = "",
-  close = true,
-  buttons = null
-) {
-  const windowContainer = document.getElementById("window-container");
-  const windowExists = document.getElementById("window");
+function windowComponent(content = '', buttons = null) {
+  const windowContainer = document.getElementById('window-container');
+  const windowExists = document.getElementById('window');
   let closeButton;
 
   if (windowExists) {
     return;
   }
-  windowContainer.style.justifyContent = place;
-  let div = document.createElement("div");
-  div.id = "window";
+  windowContainer.style.justifyContent = 'center';
+  let div = document.createElement('div');
+  div.id = 'window';
   windowContainer.appendChild(div);
 
-  if (place == "flex-end") {
-    div.classList.add("end");
-  }
+  closeButton = document.createElement('button');
+  closeButton.classList.add('close-button');
+  closeButton.innerText = 'Close';
+  closeButton.addEventListener('click', remove);
+  div.appendChild(closeButton);
 
-  if (close) {
-    closeButton = document.createElement("button");
-    closeButton.classList.add("close-button");
-    closeButton.innerText = "Close";
-    closeButton.addEventListener("click", remove);
-    div.appendChild(closeButton);
-  }
-
-  let contentDiv = document.createElement("div");
+  let contentDiv = document.createElement('div');
   contentDiv.innerText = content;
-  contentDiv.classList.add("content");
+  contentDiv.classList.add('content');
   div.appendChild(contentDiv);
 
   //all added buttons besides close button
   const addedbuttons = [];
   if (buttons) {
     buttons.forEach((buttonObject) => {
-      let button = document.createElement("button");
+      let button = document.createElement('button');
       button.innerText = buttonObject.name;
-      button.addEventListener("click", buttonObject.function);
+      button.addEventListener('click', buttonObject.function);
+      button.addEventListener('click', remove);
       if (buttonObject.dataAttribute) {
         button.dataset.attribute = buttonObject.dataAttribute;
       }
-      button.classList.add("action-button");
+      button.classList.add('action-button');
       addedbuttons.push(button);
       contentDiv.appendChild(button);
     });
@@ -53,39 +43,85 @@ function windowComponent(
 
   function remove() {
     addedbuttons.forEach((button, index) => {
-      button.removeEventListener("click", buttons[index].function);
+      button.removeEventListener('click', buttons[index].function);
+      button.removeEventListener('click', remove);
     });
-    if (closeButton) {
-      closeButton.removeEventListener("click", remove);
-    }
+    closeButton.removeEventListener('click', remove);
     windowContainer.removeChild(div);
   }
-
-  return div;
 }
+
+function coalPlantWindow(clickedPlant, attaccFunction) {
+  const { name, status, ID } = clickedPlant.properties;
+  const content = `${name}\nStatus: ${status}\nMotto: "${clickedPlant.motto}\n`;
+  windowComponent(content, [
+    {
+      name: 'Attack',
+      function: attaccFunction,
+      dataAttribute: ID,
+    },
+  ]);
+}
+
+//keeps track of magic count, plant count, converted plant count and changes bar display
+class Bar {
+  constructor(totalPlants) {
+    this.magicDisplay = document.getElementById('magic-score');
+    this.plantDisplay = document.getElementById('plant-count');
+    this.convertedPlantDisplay = document.getElementById(
+      'converted-plant-count'
+    );
+    console.log('total plants?', totalPlants);
+
+    this.magicCount = 0;
+    this.plantCount = totalPlants;
+    this.convertedPlantCount = 0;
+
+    this.updateDisplay();
+  }
+
+  updateDisplay() {
+    this.magicDisplay.innerText = this.magicCount;
+    this.plantDisplay.innerText = this.plantCount;
+    this.convertedPlantDisplay.innerText = this.convertedPlantCount;
+  }
+
+  changeMagic(change) {
+    console.log('change', change);
+    this.magicCount += change;
+    this.updateDisplay();
+  }
+
+  plantConverted() {
+    this.plantCount--;
+    this.converedPLantCount++;
+    this.updateDisplay();
+  }
+}
+
 //Object with stuff to display
 function battleBar(plantName, plantHealth) {
-  const barDiv = document.getElementById("top-bar");
-  const plantDiv = document.getElementById("plant-count-div");
-  const convertedDiv = document.getElementById("converted-count-div");
-  barDiv.classList.add("battle-bar");
-  plantDiv.style.display = "none";
-  convertedDiv.style.display = "none";
+  const barDiv = document.getElementById('top-bar');
+  const plantDiv = document.getElementById('plant-count-div');
+  const convertedDiv = document.getElementById('converted-count-div');
+  barDiv.classList.add('battle-bar');
+  plantDiv.style.display = 'none';
+  convertedDiv.style.display = 'none';
 
-  let healthDiv = document.createElement("div");
-  healthDiv.classList.add("bar-item");
+  let healthDiv = document.createElement('div');
+  healthDiv.classList.add('bar-item');
   barDiv.appendChild(healthDiv);
 
-  let contentDiv = document.createElement("div");
+  let contentDiv = document.createElement('div');
   contentDiv.innerText = `${plantName} health: `;
   healthDiv.appendChild(contentDiv);
 
-  let healthCountDiv = document.createElement("div");
+  let healthCountDiv = document.createElement('div');
   healthCountDiv.innerText = plantHealth;
   healthDiv.appendChild(healthCountDiv);
 
-  let endBattleButton = document.createElement("button");
-  endBattleButton.innerText = "End battle";
+  let endBattleButton = document.createElement('button');
+  endBattleButton.innerText = 'End battle';
   // endBattleButton.addEventListener("click", endBattle);
   barDiv.appendChild(endBattleButton);
 
@@ -94,15 +130,15 @@ function battleBar(plantName, plantHealth) {
   }
   //feed it the event listeners
   function endBattle() {
-    plantDiv.style.display = "flex";
-    convertedDiv.style.display = "flex";
-    barDiv.classList.remove("battle-bar");
+    plantDiv.style.display = 'flex';
+    convertedDiv.style.display = 'flex';
+    barDiv.classList.remove('battle-bar');
     barDiv.removeChild(healthDiv);
-    console.log("End battle11!!!");
-    endBattleButton.removeEventListener("click", endBattle);
+    console.log('End battle11!!!');
+    endBattleButton.removeEventListener('click', endBattle);
     barDiv.removeChild(endBattleButton);
   }
   return { changePlantHealth, endBattleButton, endBattle };
 }
 
-export { windowComponent, battleBar };
+export { coalPlantWindow, Bar, battleBar };

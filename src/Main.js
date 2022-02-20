@@ -1,13 +1,12 @@
 import * as L from 'leaflet';
 import 'leaflet-pixi-overlay';
-import * as PUXI from 'puxi.js';
 import Bump from './bump';
 import { mymap } from './mymap';
 import * as PIXI from 'pixi.js';
 import { CoalPlant, Hero, Magic } from './extendedSprites';
 import filteredCoalplants from './map_point_en';
 import { Keyboard } from './keyboard';
-import { windowComponent, battleBar } from './ui';
+import { coalPlantWindow, Bar, battleBar } from './ui';
 
 export class Main extends PIXI.Container {
   constructor() {
@@ -30,12 +29,10 @@ export class Main extends PIXI.Container {
     let firstDraw = true;
     let duringAttacc = false;
     let hero;
+    const displayBar = new Bar(filteredCoalplants.length);
     let plantArray = [];
     let inBoundsArray = [];
     let magicArray = [];
-    let magicCount = 0;
-    let windowDiv;
-    const magicDisplay = document.getElementById('magic-score');
     let project; // I need this outside of pixiOverlay
     let scale; // I guess I need to expose this too...
     const that = this; // ugh this and that
@@ -119,14 +116,7 @@ export class Main extends PIXI.Container {
         const target = interaction.hitTest(pixiPoint, container);
         //Show a window if coal plant is clicked
         if (target && target.coalPlant) {
-          let content = `${target.properties.name}\nStatus: ${target.properties.status}\nMotto: "${target.motto}\n`;
-          windowDiv = windowComponent('center', content, true, [
-            {
-              name: 'Attack',
-              function: attacc,
-              dataAttribute: target.properties.ID,
-            },
-          ]);
+          coalPlantWindow(target, attacc);
         }
       }
 
@@ -172,8 +162,8 @@ export class Main extends PIXI.Container {
             if (collided) {
               sprite.hit = true;
               sprite.visible = false;
-              magicCount++;
-              magicDisplay.innerText = magicCount;
+              displayBar.changeMagic(1);
+              console.log('Display bar magic count?', displayBar.magicCount);
             }
           }
         });
@@ -262,7 +252,7 @@ export class Main extends PIXI.Container {
         }
       });
 
-      // replace magic that has been picked up and hidden or out of larger bounds
+      // replace magic that has been picked up and hidden or is out of larger bounds
       magicArray.forEach((magic) => {
         if (!largerBounds.contains(magic.latLngObject) || !magic.visible) {
           let newLatLng;
@@ -282,9 +272,8 @@ export class Main extends PIXI.Container {
     }
 
     function attacc(event) {
-      windowDiv.remove();
-      let id = event.target.dataset.attribute;
-      let targetPlant = plantArray.find((plant) => plant.properties.ID == id);
+      const id = event.target.dataset.attribute;
+      const targetPlant = plantArray.find((plant) => plant.properties.ID == id);
       duringAttacc = true;
       let targetPlantHealth = targetPlant.properties.capacity;
 
@@ -315,9 +304,8 @@ export class Main extends PIXI.Container {
           plantConverted();
           endBattleAndResubscribe();
         }
-        if (magicCount > 0) {
-          magicCount += -1;
-          magicDisplay.innerText = magicCount;
+        if (displayBar.magicCount > 0) {
+          displayBar.changeMagic(-1);
           targetPlantHealth -= 3;
         } else {
           targetPlantHealth--;
