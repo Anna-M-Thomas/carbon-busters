@@ -23,6 +23,7 @@ class CoalPlant extends PIXI.Sprite {
     this.interactive = true;
     // this.buttonMode = true; why doesn't this work? Oh welllllll
     this.coalPlant = true;
+    this.convertedPlant = false;
     this.properties = properties;
     this.latLngObject = latLng;
     this.motto = getMotto('coal');

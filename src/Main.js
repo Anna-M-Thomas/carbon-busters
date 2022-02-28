@@ -6,7 +6,12 @@ import * as PIXI from 'pixi.js';
 import { CoalPlant, Hero, Magic } from './extendedSprites';
 import filteredCoalplants from './map_point_en';
 import { Keyboard } from './keyboard';
-import { coalPlantWindow, Bar, battleBar } from './ui';
+import {
+  coalPlantWindow,
+  convertedCoalPlantWindow,
+  Bar,
+  battleBar,
+} from './ui';
 
 export class Main extends PIXI.Container {
   constructor() {
@@ -26,6 +31,11 @@ export class Main extends PIXI.Container {
     let coalTexture = PIXI.Loader.shared.resources.coal.texture;
     //let magicTexture = PIXI.Loader.shared.resources.magic.texture;
     let bananaTexture = PIXI.Loader.shared.resources.banana.texture;
+    let earthTexture = PIXI.Loader.shared.resources.earth.texture;
+    let solarTexture = PIXI.Loader.shared.resources.solar.texture;
+    let waterTexture = PIXI.Loader.shared.resources.water.texture;
+    let windTexture = PIXI.Loader.shared.resources.wind.texture;
+    let otherTexture = PIXI.Loader.shared.resources.other.texture;
     let firstDraw = true;
     let duringAttacc = false;
     let hero;
@@ -116,7 +126,11 @@ export class Main extends PIXI.Container {
         const target = interaction.hitTest(pixiPoint, container);
         //Show a window if coal plant is clicked
         if (target && target.coalPlant) {
-          coalPlantWindow(target, attacc);
+          if (!target.isConverted) {
+            coalPlantWindow(target, attacc);
+          } else {
+            coalPlantWindow(target);
+          }
         }
       }
 
@@ -163,7 +177,6 @@ export class Main extends PIXI.Container {
               sprite.hit = true;
               sprite.visible = false;
               displayBar.changeMagic(1);
-              console.log('Display bar magic count?', displayBar.magicCount);
             }
           }
         });
@@ -272,7 +285,7 @@ export class Main extends PIXI.Container {
     }
 
     function attacc(event) {
-      const id = event.target.dataset.attribute;
+      const id = event.target.dataset.id;
       const targetPlant = plantArray.find((plant) => plant.properties.ID == id);
       duringAttacc = true;
       let targetPlantHealth = targetPlant.properties.capacity;
@@ -299,16 +312,17 @@ export class Main extends PIXI.Container {
       function battling() {
         if (!duringAttacc) {
           clearInterval(timerKeeper);
+          return;
         }
         if (targetPlantHealth < 0) {
-          plantConverted();
+          plantConverted(targetPlant);
           endBattleAndResubscribe();
         }
         if (displayBar.magicCount > 0) {
           displayBar.changeMagic(-1);
           targetPlantHealth -= 3;
         } else {
-          targetPlantHealth--;
+          targetPlantHealth -= 100;
         }
         changePlantHealth(targetPlantHealth);
       }
@@ -319,6 +333,55 @@ export class Main extends PIXI.Container {
         endBattle();
         keyboard.resubscribeAll();
         duringAttacc = false;
+      }
+    }
+
+    function plantConverted(targetPlant) {
+      convertedCoalPlantWindow(targetPlant, convertPlant);
+      // show window saying plant is converted (allow for choice later)
+      // change plant texture to something else
+      // I need to add a converted/not converted boolean to coal plants so they can't be attacced again
+      // Decrement plant count and increment converted plant count
+    }
+
+    function convertPlant(e) {
+      console.log('id of converted plant', e.target.dataset.id);
+      console.log('new type of converted plant', e.target.dataset.type);
+      const targetPlant = plantArray.find(
+        (plant) => plant.properties.ID == e.target.dataset.id
+      );
+      changePlantImage(targetPlant, e.target.dataset.type);
+      targetPlant.motto = 'I AM AWESOME';
+      targetPlant.isConverted = true;
+    }
+
+    function changePlantImage(targetPlant, type) {
+      switch (type) {
+        case 'earth':
+          targetPlant.texture = earthTexture;
+          targetPlant.width -= 0.7;
+          targetPlant.height -= 0.7;
+          break;
+        case 'water':
+          targetPlant.texture = waterTexture;
+          targetPlant.width -= 0.7;
+          targetPlant.height -= 0.7;
+          break;
+        case 'wind':
+          targetPlant.texture = windTexture;
+          targetPlant.width -= 0.6;
+          targetPlant.height -= 0.6;
+          break;
+        case 'solar':
+          targetPlant.texture = solarTexture;
+          targetPlant.width -= 0.5;
+          targetPlant.height -= 0.5;
+          break;
+        case 'other':
+          targetPlant.texture = otherTexture;
+          targetPlant.width -= 0.1;
+          targetPlant.height -= 0.1;
+          break;
       }
     }
   }

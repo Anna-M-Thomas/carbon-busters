@@ -33,7 +33,15 @@ function windowComponent(content = '', buttons = null) {
       button.addEventListener('click', buttonObject.function);
       button.addEventListener('click', remove);
       if (buttonObject.dataAttribute) {
-        button.dataset.attribute = buttonObject.dataAttribute;
+        if (Array.isArray(buttonObject.dataAttribute)) {
+          buttonObject.dataAttribute.forEach((attribute) => {
+            const { name, value } = attribute;
+            button.dataset[name] = value;
+          });
+        } else {
+          const { name, value } = buttonObject.dataAttribute;
+          button.dataset[name] = value;
+        }
       }
       button.classList.add('action-button');
       addedbuttons.push(button);
@@ -53,12 +61,61 @@ function windowComponent(content = '', buttons = null) {
 
 function coalPlantWindow(clickedPlant, attaccFunction) {
   const { name, status, ID } = clickedPlant.properties;
-  const content = `${name}\nStatus: ${status}\nMotto: "${clickedPlant.motto}\n`;
+  const content = `${name}\nStatus: ${status}\nMotto: "${clickedPlant.motto}"\n`;
+  if (attaccFunction) {
+    windowComponent(content, [
+      {
+        name: 'Attack',
+        function: attaccFunction,
+        dataAttribute: { name: 'id', value: ID },
+      },
+    ]);
+  } else windowComponent(content);
+}
+
+function convertedCoalPlantWindow(clickedPlant, convertPlant) {
+  const { name, ID } = clickedPlant.properties;
+  const content = `Hot damn!\n Now this stupid coal plant, ${name}, can be something else!!\n`;
   windowComponent(content, [
     {
-      name: 'Attack',
-      function: attaccFunction,
-      dataAttribute: ID,
+      name: 'Earth',
+      function: convertPlant,
+      dataAttribute: [
+        { name: 'id', value: ID },
+        { name: 'type', value: 'earth' },
+      ],
+    },
+    {
+      name: 'Water',
+      function: convertPlant,
+      dataAttribute: [
+        { name: 'id', value: ID },
+        { name: 'type', value: 'water' },
+      ],
+    },
+    {
+      name: 'Solar',
+      function: convertPlant,
+      dataAttribute: [
+        { name: 'id', value: ID },
+        { name: 'type', value: 'solar' },
+      ],
+    },
+    {
+      name: 'Wind',
+      function: convertPlant,
+      dataAttribute: [
+        { name: 'id', value: ID },
+        { name: 'type', value: 'wind' },
+      ],
+    },
+    {
+      name: 'Other',
+      function: convertPlant,
+      dataAttribute: [
+        { name: 'id', value: ID },
+        { name: 'type', value: 'other' },
+      ],
     },
   ]);
 }
@@ -87,7 +144,6 @@ class Bar {
   }
 
   changeMagic(change) {
-    console.log('change', change);
     this.magicCount += change;
     this.updateDisplay();
   }
@@ -134,11 +190,10 @@ function battleBar(plantName, plantHealth) {
     convertedDiv.style.display = 'flex';
     barDiv.classList.remove('battle-bar');
     barDiv.removeChild(healthDiv);
-    console.log('End battle11!!!');
     endBattleButton.removeEventListener('click', endBattle);
     barDiv.removeChild(endBattleButton);
   }
   return { changePlantHealth, endBattleButton, endBattle };
 }
 
-export { coalPlantWindow, Bar, battleBar };
+export { coalPlantWindow, convertedCoalPlantWindow, Bar, battleBar };
